@@ -1,7 +1,9 @@
-const acl = require('acl')
+const nodeAcl = require('acl')
 
-export default function(req, res, next) {
-  const acl = new acl(new acl.memoryBackend())
+function neoKey(req, res, next) {
+  const acl = new nodeAcl(new nodeAcl.memoryBackend())
   console.log('LOGGED')
   next()
 }
+
+module.exports = neoKey
