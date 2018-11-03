@@ -1,20 +1,28 @@
 const Neon = require('@cityofzion/neon-js')
 
 module.exports = {
-  getTokensOfAddress: async function() {
-    // call contract and get list of tokens
-    const param1 = new Neon.sc.ContractParam('String', 'tokensDataOfOwner')
-    const param2 = Neon.sc.ContractParam.byteArray('AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y', 'address')
-    const param3 = new Neon.sc.ContractParam('Integer', 0)
-
+  checkTokenForExistance: async function(
+    contract = '0x191e1e266c93b6400017fcd3157871fa4be92945',
+    address = 'AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y',
+    check = 'test'
+  ) {
     const client = new Neon.rpc.RPCClient('http://localhost:30333')
 
-    const query = await client.invoke('0x1df02e9a393ef97c4e216b2a68c69052c9d000e0', param1, Neon.sc.ContractParam.array(param2), param3)
+    const query = await client.invokeFunction(
+      contract,
+      'tokensDataOfOwner',
+      Neon.sc.ContractParam.byteArray(address, 'address'),
+      new Neon.sc.ContractParam('Integer', 0)
+    )
 
-    console.log(query)
+    const result = Neon.sc.StackItem.deserialize(query.stack[0].value)
 
-    //sb.emitAppCall('0x1df02e9a393ef97c4e216b2a68c69052c9d000e0', 'tokensDataOfOwner', 'AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y', 0)
-    //const result = await rpc.Query.invokeScript(sb.str).execute('http://localhost:10332')
-    //console.log(result)
+    const deserialized = result.value.map(obj => {
+      let responseObj = {}
+      responseObj[Buffer.from(obj.key.value, 'hex').toString()] = Buffer.from(obj.value.value, 'hex').toString()
+      return responseObj
+    })
+
+    return check === deserialized.find(obj => obj['properties/\u0001'])['properties/\u0001']
   }
 }
