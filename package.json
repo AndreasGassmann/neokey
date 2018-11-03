@@ -13,6 +13,7 @@
     "acl": "^0.4.11",
     "axios": "^0.18.0",
     "body-parser": "^1.18.3",
+    "cors": "^2.8.4",
     "element-ui": "^2.4.9",
     "express": "^4.16.4",
     "express-session": "^1.15.6",

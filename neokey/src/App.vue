@@ -1,62 +1,149 @@
 <template>
   <div id="app">
-    <img src="./assets/logo.png">
-    
-    <HelloWorld msg="Please enter your NEO address"/>
+    <img id="logo" src="./assets/key.svg">
 
-    <el-input placeholder="NEO address" v-model="input"></el-input>
-    <el-button @click="showQr">Login with NEO</el-button>
-    <vue-qr :text="qrData" size=400 qid="testid"></vue-qr>
+    <h1>NeoKey</h1>
 
-    <qrcode-stream @decode="onDecode"></qrcode-stream>
+    <el-button @click="checkSecret" slot="append">Check Secret</el-button>
+    <el-button @click="checkLogin" slot="append">Login</el-button>
+
+    <el-container id="content">
+      <el-main>
+        <el-row type="flex" class="row-bg" justify="center">
+          <el-col :span="12">
+        <transition name="component-fade" mode="out-in">
+          <div v-if="!qrData" key="addressInput">
+            <el-card class="box-card">
+              <el-input placeholder="Your NEO Address" v-model="input">
+                <el-button @click="showQr" slot="append">Login using NEO</el-button>
+              </el-input>
+            </el-card>
+          </div>
+        </transition>
+        <transition name="component-fade" mode="out-in">
+          <div v-if="qrData && !qrDataScanned" key="qrScan">
+            <vue-qr :text="qrData" :size="400" qid="testid"></vue-qr>
+            <el-button @click="qrDataScanned = true">Done, let me show the signature.</el-button>
+          </div>
+        </transition>
+        <transition name="component-fade" mode="out-in">
+          <div v-if="qrDataScanned" key="qrRead">
+            <qrcode-stream v-if="qrDataScanned" @decode="onDecode"></qrcode-stream>
+          </div>
+        </transition>
+          </el-col>
+        </el-row>
+      </el-main>
+    </el-container>
   </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+import * as axios from 'axios'
 
 export default {
   name: 'app',
-  components: {
-    HelloWorld
-  },
   methods: {
-    onDecode(decodedString) {
-      // eslint-disable-next-line
-      console.log(decodedString)
-      // ...
+    async checkLogin() {
+      try {
+        const { data } = await axios.post('http://localhost:3000/login', {
+          challengeId: 'test',
+          signature: '8ba5a96e1ba52c6dc9b581de890930537dd570f065d9697ef86c14d06c0dcb7c94d4b26f863c37fb07dc1259f58433abd90735f3187bd00f16dc884086433103',
+          publickey: '031d8e1630ce640966967bc6d95223d21f44304133003140c3b52004dc981349c9'
+         })
+      } catch (error) {
+        // eslint-disable-next-line
+        console.warn(error)
+      }
+    },
+    async checkSecret() {
+      try {
+        const { data } = await axios.get('http://localhost:3000/secret', { withCredentials: true })
+        this.showAlert(data)
+      } catch (error) {
+        // eslint-disable-next-line
+        console.warn(error)
+      }
+    },
+    async onDecode(decodedString) {
+      const binary = decodedString.substr(29)
+      const parsed = JSON.parse(atob(binary))
+
+      console.log(parsed)
+
+      try {
+        const { data } = await axios.post('http://localhost:3000/login', { 
+          challengeId: parsed.message, 
+          publickey: parsed.publickey,
+          signature: parsed.signature
+        })
+        // eslint-disable-next-line
+        console.log(data)
+        this.showAlert(data.address)
+      } catch (error) {
+        // eslint-disable-next-line
+        console.warn(error)
+      }
+    },
+    async showAlert(address) {
+      await this.$alert(`You have been identified as ${address}.`, 'Login Successful.', {
+          confirmButtonText: 'Thanks.',
+          type: 'success',
+          center: true
+      })
     },
     showQr() {
-      // eslint-disable-next-line
-      // this.qrData = this.input
-      let message = 'challenge'
-      let publickey = '02963fc761eb7135c4593bfc6a0af96d8588b70d8f6ef3af8549181e57772181f5'
-      if (this.input === '') {
-        message = ''
-        publickey = ''
+      this.loading = true
+
+      let data = { 
+        message: 'challenge', 
+        address: this.input
       }
 
-      let data = { message, publickey }
-
       this.qrData = `airgap-vault://message?data=${btoa(JSON.stringify(data))}`
+      this.loading = false
     }
   },
   data() {
     return {
+      qrDataScanned: false,
+      loading: false,
       input: '',
-      qrData: 'test'
+      qrData: null
     }
   }
 }
 </script>
 
 <style>
-#app {
+@import url('https://fonts.googleapis.com/css?family=Tinos');
+
+h1 {
+  font-family: 'Tinos', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-align: center;
+  color: #2c3e50;
+}
+
+#logo {
+  width: 200px;
+}
+
+body, html {
   font-family: 'Avenir', Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
   margin-top: 60px;
+}
+
+.component-fade-enter-active, .component-fade-leave-active {
+  transition: opacity .3s ease;
+}
+.component-fade-enter, .component-fade-leave-to
+/* .component-fade-leave-active below version 2.1.8 */ {
+  opacity: 0;
 }
 </style>

@@ -4,6 +4,7 @@ const app = express()
 const passport = require('passport')
 const PassportNeo = require('passport-neo')
 const bodyParser = require('body-parser')
+const cors = require('cors')
 
 passport.serializeUser(function(user, done) {
   done(null, user)
@@ -23,8 +24,8 @@ app.use(
   })
 )
 
+app.use(cors({ credentials: true }))
 app.use(bodyParser.json())
-app.use(bodyParser.urlencoded({ extended: true }))
 app.use(express.static('neokey/dist'))
 
 app.use((res, req, next) => {
@@ -33,14 +34,16 @@ app.use((res, req, next) => {
   console.log('method', res.method)
   next()
 })
-app.use(neoKey)
+
 app.use(passport.initialize()) // Used to initialize passport
 app.use(passport.session()) // Used to persist login sessions
 app.use((res, req, next) => {
   console.log('q')
   next()
 })
+
 const onAuth = ({ challengeId, address }, done) => {
+  console.log(challengeId, address)
   if (!challengeId === 'test') {
     done(new Error('User did not sign the right challenge.'))
   }
@@ -51,57 +54,28 @@ const NeoStrategy = new PassportNeo(onAuth)
 
 passport.use(NeoStrategy)
 
-app.get('/login', (req, res) => {
-  res.send(`<html><head>
-  <script>
-/*
-  $.ajax({
-    url: 'http://localhost:3000/login',
-    type: 'POST',
-    data: JSON.stringify({
-      address: 'test'
-    }),
-    contentType: 'application/json',
-    success: function(res) {
-      return alert("res: " + res);
-    }
-  });*/
-  </script>
-  </head>
-  <form action="/login" method="post">
-  <input name="challengeId" placeholder="challengeId" /><br />
-  <input name="signature" placeholder="signature" /><br />
-  <input name="publickey" placeholder="publickey" /><br />
-  <button type="submit">Submit</button>
-  </form>
-  </html>`)
-})
-
 app.use((res, req, next) => {
   console.log('dd')
   next()
 })
-app.post('/login', passport.authenticate('neo'))
 
-app.use((res, req, next) => {
-  console.log('dasdfd')
-  next()
+app.post('/login', passport.authenticate('neo'), (req, res) => {
+  return res.sendStatus(200)
 })
-/*
-app.get('/', (req, res) => {
-  res.send('Hello World!')
-})
-*/
+
 function isUserAuthenticated(req, res, next) {
   if (req.user) {
+    console.log('is authenticated')
     next()
   } else {
-    res.send('You must login!')
+    res.sendStatus(401)
   }
 }
 
-app.get('/secret', isUserAuthenticated, (req, res) => {
-  res.send(`Hello NEO user with ${req.user.address} address!`)
+app.get('/secret', isUserAuthenticated, neoKey, (req, res) => {
+  return res.status(200).json({
+    secret: `Hello NEO user with ${req.user.address} address!`
+  })
 })
 
 app.listen(3000)
