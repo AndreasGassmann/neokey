@@ -33,6 +33,19 @@
             <i v-if="!scope.row.allowed" class="el-icon el-icon-circle-close warning"></i>
         </template>
       </el-table-column>
+      <el-table-column
+        align="right"
+        label="Actions">
+        <template slot-scope="scope">
+          <el-button v-if="scope.row.allowed"
+          size="mini"
+          >Grant Access</el-button>
+        <el-button v-if="scope.row.allowed"
+          size="mini"
+          type="danger"
+          >Revoke Access</el-button>
+          </template>
+      </el-table-column>
     </el-table>
           </el-col>
         </el-row>
@@ -59,6 +72,12 @@ export default {
     this.fetchDoors()
   },
   methods: {
+    grant () {
+
+    },
+    revoke () {
+
+    },
     async logout() {
       await axios.get(`${baseUrl}/logout`)
       this.$router.push('/')

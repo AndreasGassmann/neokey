@@ -121,8 +121,8 @@ app.get('/api/doors', isUserAuthenticated, neoKey('0x191e1e266c93b6400017fcd3157
       name: 'Pfingstweidstrasse 51 - 1. Floor Entrance'
     },
     {
-      id: 'PW51-02',
-      name: 'Pfingstweidstrasse 51 - 2. Floor Entrance'
+      id: 'PW51-UG',
+      name: 'Pfingstweidstrasse 51 - Safe Room'
     }
   ]
   return res.status(200).json(

@@ -12,16 +12,16 @@
     <el-container id="content">
       <el-main>
         <el-row type="flex" class="row-bg" justify="center">
-          <el-col :span="16">
+        <el-col :span="12">
         <transition name="component-fade" mode="out-in">
           <div v-if="!qrData" key="addressInput">
-            <el-card class="box-card">
-              <el-input placeholder="Your NEO Address" v-model="input">
-                <el-button @click="showQr" slot="append">
-                  Login using NEO
-                  <img class="neo-logo" src="./assets/neo.png">
-                </el-button>
-              </el-input>
+            <el-card class="box-card login-card">
+              <br><br><br><br>
+              <el-button  @click="showQr">
+                Login using NEO
+                <img class="neo-logo" src="./assets/neo.png">
+              </el-button>
+              <br><br><br><br><br><br><br>
               <div id="logo">
                 <span>Powered by <span clas="neokey-font">NEOKΞY</span></span> <img src="./assets/key.svg">
               </div>
@@ -146,6 +146,10 @@ export default {
 
 .neo-logo {
   width: 15px;
+}
+
+.login-card {
+  min-height: 300px;
 }
 
 .neokey-font {
