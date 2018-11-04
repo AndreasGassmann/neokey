@@ -2,7 +2,7 @@
   <div id="app">
     <img id="logo" src="./assets/key.svg">
 
-    <h1>NeoKey</h1>
+    <h1>NEOKΞY</h1>
 
     <el-button @click="checkSecret" slot="append">Check Secret</el-button>
     <el-button @click="checkLogin" slot="append">Login</el-button>
@@ -41,12 +41,14 @@
 <script>
 import * as axios from 'axios'
 
+const baseUrl = `http://localhost:8080/api`
+
 export default {
   name: 'app',
   methods: {
     async checkLogin() {
       try {
-        const { data } = await axios.post('http://localhost:3000/login', {
+        const { data } = await axios.post(`${baseUrl}/login`, {
           challengeId: 'test',
           signature: '8ba5a96e1ba52c6dc9b581de890930537dd570f065d9697ef86c14d06c0dcb7c94d4b26f863c37fb07dc1259f58433abd90735f3187bd00f16dc884086433103',
           publickey: '031d8e1630ce640966967bc6d95223d21f44304133003140c3b52004dc981349c9'
@@ -58,7 +60,7 @@ export default {
     },
     async checkSecret() {
       try {
-        const { data } = await axios.get('http://localhost:3000/secret', { withCredentials: true })
+        const { data } = await axios.get(`${baseUrl}/secret`, { withCredentials: true })
         this.showAlert(data)
       } catch (error) {
         // eslint-disable-next-line
@@ -72,7 +74,7 @@ export default {
       console.log(parsed)
 
       try {
-        const { data } = await axios.post('http://localhost:3000/login', { 
+        const { data } = await axios.post(`${baseUrl}/login`, { 
           challengeId: parsed.message, 
           publickey: parsed.publickey,
           signature: parsed.signature

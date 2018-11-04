@@ -9,9 +9,10 @@ import VueQrcodeReader from 'vue-qrcode-reader'
 Vue.use(VueQrcodeReader)
 
 import VueQr from 'vue-qr'
+import VueRouter from 'vue-router'
 
-// eslint-disable-next-line
 Vue.component('vue-qr', VueQr)
+Vue.use(VueRouter)
 
 new Vue({
   render: h => h(App)

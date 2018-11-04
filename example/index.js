@@ -59,7 +59,7 @@ app.use((res, req, next) => {
   next()
 })
 
-app.post('/login', passport.authenticate('neo'), (req, res) => {
+app.post('/api/login', passport.authenticate('neo'), (req, res) => {
   return res.sendStatus(200)
 })
 
@@ -72,7 +72,7 @@ function isUserAuthenticated(req, res, next) {
   }
 }
 
-app.get('/secret', isUserAuthenticated, neoKey, (req, res) => {
+app.get('/api/secret', isUserAuthenticated, neoKey('0x191e1e266c93b6400017fcd3157871fa4be92945', 'test'), (req, res) => {
   return res.status(200).json({
     secret: `Hello NEO user with ${req.user.address} address!`
   })
