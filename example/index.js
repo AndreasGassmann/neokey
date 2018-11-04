@@ -59,7 +59,19 @@ app.use((res, req, next) => {
   next()
 })
 
+app.get('/api/authenticated', isUserAuthenticated, (req, res) => {
+  console.log('is authenticated!')
+  return res.sendStatus(200)
+})
+
 app.post('/api/login', passport.authenticate('neo'), (req, res) => {
+  return res.status(200).json({
+    address: req.user.address
+  })
+})
+
+app.get('/api/logout', (req, res) => {
+  req.logout()
   return res.sendStatus(200)
 })
 
@@ -76,6 +88,49 @@ app.get('/api/secret', isUserAuthenticated, neoKey('0x191e1e266c93b6400017fcd315
   return res.status(200).json({
     secret: `Hello NEO user with ${req.user.address} address!`
   })
+})
+
+app.get('/api/doors', isUserAuthenticated, neoKey('0x191e1e266c93b6400017fcd3157871fa4be92945', 'test'), (req, res) => {
+  const doors = [
+    {
+      id: 'FB181-00',
+      name: 'Förrlibuckstrasse 181 - Main Entrance'
+    },
+    {
+      id: 'FB181-01',
+      name: 'Förrlibuckstrasse 181 - 1. Floor Entrance'
+    },
+    {
+      id: 'FB181-02',
+      name: 'Förrlibuckstrasse 181 - 2. Floor Entrance'
+    },
+    {
+      id: 'FB181-03',
+      name: 'Förrlibuckstrasse 181 - 3. Floor Entrance'
+    },
+    {
+      id: 'FB181-04',
+      name: 'Förrlibuckstrasse 181 - 4. Floor Entrance'
+    },
+    {
+      id: 'PW51-00',
+      name: 'Pfingstweidstrasse 51 - Main Entrance'
+    },
+    {
+      id: 'PW51-01',
+      name: 'Pfingstweidstrasse 51 - 1. Floor Entrance'
+    },
+    {
+      id: 'PW51-02',
+      name: 'Pfingstweidstrasse 51 - 2. Floor Entrance'
+    }
+  ]
+  return res.status(200).json(
+    doors.map(obj => {
+      obj.allowed = req.tokens.find(token => token === obj.id) ? true : false
+      return obj
+    })
+  )
 })
 
 app.listen(3000)

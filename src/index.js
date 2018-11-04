@@ -2,13 +2,12 @@ const service = require('./contract')
 
 function neoKey(contract, tokenProperty) {
   return (req, res, next) => {
-    console.log('checkTokenForExistance')
     service.checkTokenForExistance(contract, req.user.address, tokenProperty).then(result => {
-      console.log('checkTokenForExistance', result)
-      if (result) {
-        next()
+      req.tokens = []
+      if (result.length > 0) {
+        req.tokens = result
       }
-      return res.sendStatus(401)
+      return next()
     })
   }
 }
